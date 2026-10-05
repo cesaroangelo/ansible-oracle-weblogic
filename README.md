@@ -114,7 +114,8 @@ Logs go to the journal: `journalctl -u weblogic-<domain>-adminserver`.
 
 ```sh
 pip install ansible-lint yamllint molecule "molecule-plugins[docker]" docker
-ansible-galaxy collection install -r requirements.yml community.docker
+ansible-galaxy collection install -r requirements.yml
+ansible-galaxy collection install community.docker
 yamllint . && ansible-lint
 molecule test --platform-name el9
 ```
