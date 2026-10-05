@@ -59,6 +59,11 @@ argument_specs:
         type: bool
         default: false
         description: O(weblogic_installer) is already on the managed node.
+      weblogic_installer_extra_args:
+        type: list
+        elements: str
+        default: []
+        description: Extra installer arguments, e.g. C(-ignoreSysPrereqs).
       weblogic_install_type:
         type: str
         default: WebLogic Server
@@ -83,7 +88,9 @@ argument_specs:
         type: str
         default: prod
         choices: [dev, prod, secure]
-        description: Domain start mode. V(secure) enables secured production mode (SSL only).
+        description:
+          - Domain mode. V(prod) explicitly disables secured production mode (default in 14.1.2+).
+          - V(secure) enables secured production mode (14.1.1+), SSL and administration port only.
       weblogic_admin_username:
         type: str
         default: weblogic
@@ -113,6 +120,10 @@ argument_specs:
         type: int
         default: 7002
         description: Administration Server SSL listen port.
+      weblogic_administration_port:
+        type: int
+        default: 9002
+        description: Domain administration port, used in V(secure) mode.
       weblogic_admin_mem_args:
         type: str
         default: -Xms512m -Xmx1024m

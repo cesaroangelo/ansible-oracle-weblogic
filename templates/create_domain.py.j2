@@ -12,7 +12,7 @@ cd('/')
 set('Name', domain_name)
 setOption('DomainName', domain_name)
 setOption('JavaHome', '{{ weblogic_java_home }}')
-setOption('ServerStartMode', '{{ weblogic_server_start_mode }}')
+setOption('ServerStartMode', '{{ 'dev' if weblogic_server_start_mode == 'dev' else 'prod' }}')
 setOption('OverwriteDomain', 'false')
 
 cd('/Servers/AdminServer')
@@ -34,6 +34,25 @@ cmo.setPassword(admin_password)
 cd('/SecurityConfiguration/%s' % domain_name)
 set('NodeManagerUsername', admin_user)
 set('NodeManagerPasswordEncrypted', admin_password)
+{% if weblogic_server_start_mode == 'secure' %}
+
+# Secured production mode (14.1.1+): plain listen port disabled, administration port enabled
+create('NO_NAME', 'SecureMode')
+cd('SecureMode/NO_NAME')
+set('SecureModeEnabled', 'true')
+cd('/')
+set('AdministrationPort', {{ weblogic_administration_port }})
+{% elif weblogic_server_start_mode == 'prod' %}
+
+# 14.1.2+ enables secured production mode with prod: disable it explicitly.
+# Releases without the SecureMode MBean (12.2.1.4) have nothing to disable.
+try:
+    create('NO_NAME', 'SecureMode')
+    cd('SecureMode/NO_NAME')
+    set('SecureModeEnabled', 'false')
+except:
+    print('SecureMode not supported, skipping')
+{% endif %}
 
 setOption('NodeManagerType', 'PerDomainNodeManager')
 cd('/NMProperties')

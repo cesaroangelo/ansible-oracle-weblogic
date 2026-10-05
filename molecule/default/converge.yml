@@ -1,0 +1,7 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: Apply role
+      ansible.builtin.include_role:
+        name: cesaroangelo.weblogic

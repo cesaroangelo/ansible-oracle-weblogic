@@ -14,7 +14,7 @@ Administration Server and the per-domain Node Manager as systemd services.
 
 | Component      | Supported                                            |
 |----------------|------------------------------------------------------|
-| Ansible        | ansible-core >= 2.15                                 |
+| Ansible        | ansible-core >= 2.16 (EL8 targets: 2.16, see below)  |
 | Collections    | `ansible.posix` (see `requirements.yml`)             |
 | Target OS      | RHEL / Rocky / AlmaLinux / Oracle Linux 8, 9         |
 | WebLogic / JDK | 14.1.2 (JDK 17, 21), 14.1.1 (JDK 8, 11), 12.2.1.4 (JDK 8) |
@@ -28,6 +28,9 @@ or My Oracle Support:
 ```sh
 ansible-galaxy collection install -r requirements.yml
 ```
+
+EL8 ships Python 3.6. ansible-core 2.17+ no longer supports it on targets, and the `dnf`
+module cannot use the EL8 dnf bindings from a newer Python. Manage EL8 hosts with ansible-core 2.16.
 
 ## Role variables
 
@@ -50,6 +53,8 @@ Main defaults (full list in [`defaults/main.yml`](defaults/main.yml) and
 | `weblogic_domain_name`         | `base_domain`                                    |
 | `weblogic_domain_home`         | `/u01/app/oracle/config/domains/<domain>`        |
 | `weblogic_server_start_mode`   | `prod` (`dev`, `prod`, `secure`)                 |
+| `weblogic_administration_port` | `9002` (`secure` mode)                           |
+| `weblogic_installer_extra_args`| `[]`, e.g. `["-ignoreSysPrereqs"]`               |
 | `weblogic_admin_username`      | `weblogic`                                       |
 | `weblogic_admin_listen_port`   | `7001`                                           |
 | `weblogic_admin_ssl_enabled`   | `false` (port `7002`)                            |
@@ -57,8 +62,12 @@ Main defaults (full list in [`defaults/main.yml`](defaults/main.yml) and
 | `weblogic_service_state`       | `started`                                        |
 | `weblogic_firewall_manage`     | `true` (only if firewalld is running)            |
 
-`secure` enables secured production mode (14.1.1+): the plain port is disabled and the
-Administration Server listens on `weblogic_admin_ssl_listen_port` only.
+Domain modes:
+
+- `prod`: production mode. Secured production mode, enabled by default with production mode
+  since 14.1.2, is explicitly disabled so the plain listen port stays available.
+- `secure`: secured production mode (14.1.1+). The plain port is disabled; the Administration
+  Server listens on `weblogic_admin_ssl_listen_port` and `weblogic_administration_port`.
 
 ## Example
 
@@ -100,6 +109,19 @@ Logs go to the journal: `journalctl -u weblogic-<domain>-adminserver`.
   password, change it in WebLogic first, then remove `boot.properties` and rerun the role.
 - Domain creation is skipped when `config/config.xml` already exists: later changes to
   domain variables are not applied to an existing domain.
+
+## Testing
+
+```sh
+pip install ansible-lint yamllint molecule "molecule-plugins[docker]" docker
+ansible-galaxy collection install -r requirements.yml community.docker
+yamllint . && ansible-lint
+molecule test --platform-name el9
+```
+
+The Molecule scenario runs the role on Rocky Linux 8 (`secure` mode, no Node Manager) and 9
+(`prod` mode), checks idempotence and verifies services, ports and file permissions. Oracle
+media cannot be redistributed, so the scenario uses a test double for the installer and WLST.
 
 ## License
 

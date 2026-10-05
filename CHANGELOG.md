@@ -10,7 +10,9 @@ Complete rewrite. Not compatible with 1.x.
 - Domain creation with WLST offline, credentials passed through the environment.
 - systemd units for Administration Server and Node Manager.
 - firewalld integration, optional SSL and secured production mode.
-- CI: yamllint, ansible-lint (production profile), syntax check.
+- Explicit secured production mode handling (14.1.2 enables it by default with `prod`).
+- `weblogic_installer_extra_args` (e.g. `-ignoreSysPrereqs`).
+- CI: yamllint, ansible-lint (production profile), syntax check, Molecule on EL8 and EL9.
 
 ### Removed
 - Playbooks in `defaults/`, SysV init script, WebLogic 10.3.6 / JDK 7 / EL6 support.

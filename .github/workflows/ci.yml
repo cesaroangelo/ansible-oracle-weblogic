@@ -32,3 +32,30 @@ jobs:
           mkdir -p "$ANSIBLE_ROLES_PATH"
           ln -s "$GITHUB_WORKSPACE" "$ANSIBLE_ROLES_PATH/cesaroangelo.weblogic"
           ansible-playbook -i examples/inventory.ini examples/site.yml --syntax-check
+
+  molecule:
+    needs: lint
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # EL8 ships Python 3.6: ansible-core 2.16 is the last release able to manage it
+          - platform: el8
+            ansible: ansible-core>=2.16,<2.17
+          - platform: el9
+            ansible: ansible-core
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install tools
+        run: pip install "${{ matrix.ansible }}" molecule "molecule-plugins[docker]" docker
+      - name: Install collections
+        run: ansible-galaxy collection install -r requirements.yml community.docker
+      - name: Molecule
+        run: molecule test --platform-name ${{ matrix.platform }}
+        env:
+          PY_COLORS: "1"
+          ANSIBLE_FORCE_COLOR: "1"

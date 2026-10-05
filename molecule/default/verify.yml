@@ -1,0 +1,54 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: false
+  vars:
+    domain_home: /u01/app/oracle/config/domains/test_domain
+    script: /u01/app/oracle/stage/create_domain_test_domain.py
+    secure: "{{ weblogic_server_start_mode | default('prod') == 'secure' }}"
+  tasks:
+    - name: Read domain script
+      ansible.builtin.slurp:
+        src: "{{ script }}"
+      register: domain_script
+
+    - name: Read installer arguments
+      ansible.builtin.slurp:
+        src: /u01/app/oracle/stage/installer.args
+      register: installer_args
+
+    - name: Check domain script
+      ansible.builtin.assert:
+        that:
+          - "'Molecule-Pw-1' not in script_text"
+          - "('SecureModeEnabled\\', \\'true\\'' in script_text) == (secure | bool)"
+          - "('SecureModeEnabled\\', \\'false\\'' in script_text) != (secure | bool)"
+          - "weblogic_installer_extra_args | default([]) | join(' ') in installer_args.content | b64decode"
+      vars:
+        script_text: "{{ domain_script.content | b64decode }}"
+
+    - name: Stat boot.properties
+      ansible.builtin.stat:
+        path: "{{ domain_home }}/servers/AdminServer/security/boot.properties"
+      register: boot
+
+    - name: Check boot.properties permissions
+      ansible.builtin.assert:
+        that:
+          - boot.stat.mode == '0600'
+          - boot.stat.pw_name == 'oracle'
+
+    - name: Collect service facts
+      ansible.builtin.service_facts:
+
+    - name: Check services
+      ansible.builtin.assert:
+        that:
+          - ansible_facts.services['weblogic-test_domain-adminserver.service'].state == 'running'
+          - (ansible_facts.services['weblogic-test_domain-nodemanager.service'].state | default('absent') == 'running')
+            != (secure | bool)
+
+    - name: Check Administration Server port
+      ansible.builtin.wait_for:
+        port: "{{ 7002 if secure | bool else 7001 }}"
+        timeout: 10

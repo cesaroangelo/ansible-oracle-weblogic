@@ -20,6 +20,7 @@ weblogic_jdk_archive_remote_src: false
 # weblogic_installer: required
 weblogic_installer_remote_src: false
 weblogic_install_type: WebLogic Server
+weblogic_installer_extra_args: []
 
 # Domain
 weblogic_domain_name: base_domain
@@ -34,6 +35,7 @@ weblogic_admin_listen_address: ""
 weblogic_admin_listen_port: 7001
 weblogic_admin_ssl_enabled: false
 weblogic_admin_ssl_listen_port: 7002
+weblogic_administration_port: 9002
 weblogic_admin_mem_args: "-Xms512m -Xmx1024m"
 weblogic_admin_java_options: "-Djava.security.egd=file:/dev/./urandom"
 

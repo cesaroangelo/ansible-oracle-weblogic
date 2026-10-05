@@ -54,7 +54,15 @@
 
     - name: Run silent installer
       ansible.builtin.command:
-        argv:
+        argv: "{{ __weblogic_installer_argv + weblogic_installer_extra_args }}"
+        chdir: "{{ weblogic_stage_dir }}"
+        creates: "{{ weblogic_installed_marker }}"
+      become: true
+      become_user: "{{ weblogic_user }}"
+      environment:
+        JAVA_HOME: "{{ weblogic_java_home }}"
+      vars:
+        __weblogic_installer_argv:
           - "{{ weblogic_java_home }}/bin/java"
           - -jar
           - "{{ __weblogic_installer_jar.files[0].path }}"
@@ -63,12 +71,6 @@
           - "{{ weblogic_stage_dir }}/install.rsp"
           - -invPtrLoc
           - "{{ weblogic_stage_dir }}/oraInst.loc"
-        chdir: "{{ weblogic_stage_dir }}"
-        creates: "{{ weblogic_installed_marker }}"
-      become: true
-      become_user: "{{ weblogic_user }}"
-      environment:
-        JAVA_HOME: "{{ weblogic_java_home }}"
 
   always:
     - name: Remove installer media

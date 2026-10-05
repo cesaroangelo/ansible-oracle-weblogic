@@ -5,7 +5,7 @@ galaxy_info:
   author: Angelo Cesaro
   description: Install Oracle WebLogic Server and create a domain managed by systemd
   license: GPL-3.0-or-later
-  min_ansible_version: "2.15"
+  min_ansible_version: "2.16"
   platforms:
     - name: EL
       versions:

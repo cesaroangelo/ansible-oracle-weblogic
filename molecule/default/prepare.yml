@@ -1,0 +1,27 @@
+---
+- name: Prepare
+  hosts: all
+  tasks:
+    - name: Create media directories
+      ansible.builtin.file:
+        path: /opt/media/jdk/bin
+        state: directory
+        mode: "0755"
+
+    - name: Install installer/WLST test double as java
+      ansible.builtin.copy:
+        src: java
+        dest: /opt/media/jdk/bin/java
+        mode: "0755"
+
+    - name: Build JDK archive  # noqa: command-instead-of-module (creates, not extracts)
+      ansible.builtin.command:
+        cmd: tar czf /opt/media/jdk.tar.gz jdk
+        chdir: /opt/media
+        creates: /opt/media/jdk.tar.gz
+
+    - name: Create installer jar
+      ansible.builtin.copy:
+        content: ""
+        dest: /opt/media/fmw_14.1.2.0.0_wls_generic.jar
+        mode: "0644"
