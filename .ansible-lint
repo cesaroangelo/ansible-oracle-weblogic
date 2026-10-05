@@ -1,0 +1,6 @@
+---
+profile: production
+exclude_paths:
+  - .github/
+mock_roles:
+  - cesaroangelo.weblogic

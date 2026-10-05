@@ -1,0 +1,80 @@
+---
+- name: Install systemd units
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "/etc/systemd/system/{{ item.name }}.service"
+    owner: root
+    group: root
+    mode: "0644"
+  loop:
+    - name: "{{ weblogic_admin_service }}"
+      src: adminserver.service.j2
+      enabled: true
+    - name: "{{ weblogic_nodemanager_service }}"
+      src: nodemanager.service.j2
+      enabled: "{{ weblogic_nodemanager_enabled | bool }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: item.enabled | bool
+  notify: Restart weblogic services
+
+- name: Disable Node Manager
+  when: not weblogic_nodemanager_enabled | bool
+  block:
+    - name: Check Node Manager unit
+      ansible.builtin.stat:
+        path: "/etc/systemd/system/{{ weblogic_nodemanager_service }}.service"
+      register: __weblogic_nm_unit
+
+    - name: Stop Node Manager service
+      ansible.builtin.systemd_service:
+        name: "{{ weblogic_nodemanager_service }}"
+        state: stopped
+        enabled: false
+      when: __weblogic_nm_unit.stat.exists
+
+    - name: Remove Node Manager unit
+      ansible.builtin.file:
+        path: "/etc/systemd/system/{{ weblogic_nodemanager_service }}.service"
+        state: absent
+      notify: Reload systemd
+
+- name: Open firewall ports
+  when: weblogic_firewall_manage | bool
+  block:
+    - name: Gather service facts
+      ansible.builtin.service_facts:
+
+    - name: Allow Administration Server ports
+      ansible.posix.firewalld:
+        port: "{{ item }}/tcp"
+        permanent: true
+        immediate: true
+        state: enabled
+      loop: "{{ weblogic_admin_ports }}"
+      when: ansible_facts.services['firewalld.service'].state | default('') == 'running'
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: Manage Node Manager service
+  ansible.builtin.systemd_service:
+    name: "{{ weblogic_nodemanager_service }}"
+    enabled: "{{ weblogic_service_enabled }}"
+    state: "{{ weblogic_service_state }}"
+    daemon_reload: true
+  when: weblogic_nodemanager_enabled | bool
+
+- name: Manage Administration Server service
+  ansible.builtin.systemd_service:
+    name: "{{ weblogic_admin_service }}"
+    enabled: "{{ weblogic_service_enabled }}"
+    state: "{{ weblogic_service_state }}"
+    daemon_reload: true
+
+- name: Wait for Administration Server
+  ansible.builtin.wait_for:
+    host: "{{ weblogic_admin_listen_address | default('127.0.0.1', true) }}"
+    port: "{{ weblogic_admin_ports[0] }}"
+    timeout: "{{ weblogic_wait_timeout }}"
+  when: weblogic_service_state == 'started'

@@ -1,0 +1,156 @@
+---
+argument_specs:
+  main:
+    short_description: Install Oracle WebLogic Server and create a domain
+    description:
+      - Installs a JDK (optional) and WebLogic Server in silent mode, creates a domain
+        with WLST offline and runs the Administration Server and Node Manager under systemd.
+    options:
+      weblogic_user:
+        type: str
+        default: oracle
+        description: OS user owning the installation.
+      weblogic_group:
+        type: str
+        default: oinstall
+        description: Primary group of O(weblogic_user), also the inventory group.
+      weblogic_user_home:
+        type: path
+        default: /home/oracle
+        description: Home directory of O(weblogic_user).
+      weblogic_base_dir:
+        type: path
+        default: /u01/app/oracle
+        description: Oracle base directory.
+      weblogic_oracle_home:
+        type: path
+        default: /u01/app/oracle/product/wls
+        description: Oracle Home where WebLogic is installed.
+      weblogic_inventory_dir:
+        type: path
+        default: /u01/app/oracle/oraInventory
+        description: Central inventory directory.
+      weblogic_stage_dir:
+        type: path
+        default: /u01/app/oracle/stage
+        description: Staging directory for installer media and scripts.
+      weblogic_stage_cleanup:
+        type: bool
+        default: true
+        description: Remove installer media from the staging directory after installation.
+      weblogic_java_home:
+        type: path
+        default: /u01/app/oracle/product/jdk
+        description: JDK used by the installer and the domain.
+      weblogic_jdk_archive:
+        type: str
+        default: ""
+        description:
+          - JDK C(.tar.gz) unpacked into O(weblogic_java_home). Leave empty to use an existing JDK.
+      weblogic_jdk_archive_remote_src:
+        type: bool
+        default: false
+        description: O(weblogic_jdk_archive) is already on the managed node.
+      weblogic_installer:
+        type: str
+        required: true
+        description: WebLogic generic installer, C(.jar) or the C(.zip) distributed by Oracle.
+      weblogic_installer_remote_src:
+        type: bool
+        default: false
+        description: O(weblogic_installer) is already on the managed node.
+      weblogic_install_type:
+        type: str
+        default: WebLogic Server
+        choices:
+          - WebLogic Server
+          - Complete with Examples
+          - Fusion Middleware Infrastructure
+        description: Installer C(INSTALL_TYPE).
+      weblogic_domain_name:
+        type: str
+        default: base_domain
+        description: Domain name.
+      weblogic_domain_home:
+        type: path
+        default: /u01/app/oracle/config/domains/base_domain
+        description: Domain directory.
+      weblogic_domain_template:
+        type: path
+        default: /u01/app/oracle/product/wls/wlserver/common/templates/wls/wls.jar
+        description: Domain template read by WLST.
+      weblogic_server_start_mode:
+        type: str
+        default: prod
+        choices: [dev, prod, secure]
+        description: Domain start mode. V(secure) enables secured production mode (SSL only).
+      weblogic_admin_username:
+        type: str
+        default: weblogic
+        description: Administrator user name.
+      weblogic_admin_password:
+        type: str
+        required: true
+        no_log: true
+        description: Administrator password. Store it with ansible-vault.
+      weblogic_admin_server_name:
+        type: str
+        default: AdminServer
+        description: Administration Server name.
+      weblogic_admin_listen_address:
+        type: str
+        default: ""
+        description: Administration Server listen address, empty for all interfaces.
+      weblogic_admin_listen_port:
+        type: int
+        default: 7001
+        description: Administration Server plain listen port.
+      weblogic_admin_ssl_enabled:
+        type: bool
+        default: false
+        description: Enable the SSL listen port.
+      weblogic_admin_ssl_listen_port:
+        type: int
+        default: 7002
+        description: Administration Server SSL listen port.
+      weblogic_admin_mem_args:
+        type: str
+        default: -Xms512m -Xmx1024m
+        description: C(USER_MEM_ARGS) for the Administration Server.
+      weblogic_admin_java_options:
+        type: str
+        default: -Djava.security.egd=file:/dev/./urandom
+        description: C(JAVA_OPTIONS) for the Administration Server.
+      weblogic_nodemanager_enabled:
+        type: bool
+        default: true
+        description: Run the per-domain Node Manager as a systemd service.
+      weblogic_nodemanager_listen_address:
+        type: str
+        default: localhost
+        description: Node Manager listen address.
+      weblogic_nodemanager_listen_port:
+        type: int
+        default: 5556
+        description: Node Manager listen port.
+      weblogic_service_enabled:
+        type: bool
+        default: true
+        description: Enable services at boot.
+      weblogic_service_state:
+        type: str
+        default: started
+        choices: [started, stopped]
+        description: Desired state of the services.
+      weblogic_service_limit_nofile:
+        type: int
+        default: 65536
+        description: C(LimitNOFILE) for the services.
+      weblogic_wait_timeout:
+        type: int
+        default: 600
+        description: Seconds to wait for the Administration Server to listen.
+      weblogic_firewall_manage:
+        type: bool
+        default: true
+        description: Open the Administration Server ports in firewalld when it is running.

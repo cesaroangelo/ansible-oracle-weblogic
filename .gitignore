@@ -1,0 +1,4 @@
+*.retry
+.ansible/
+examples/group_vars/*/vault.yml
+examples/files/

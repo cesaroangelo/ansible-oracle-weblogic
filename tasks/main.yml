@@ -1,0 +1,29 @@
+---
+- name: Validate platform
+  ansible.builtin.assert:
+    that:
+      - ansible_facts['os_family'] == 'RedHat'
+      - ansible_facts['distribution_major_version'] in ['8', '9']
+    fail_msg: "Unsupported platform {{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version'] }}"
+    quiet: true
+  tags: [always]
+
+- name: Prepare host
+  ansible.builtin.import_tasks: prerequisites.yml
+  tags: [weblogic, weblogic_prerequisites]
+
+- name: Install JDK
+  ansible.builtin.import_tasks: jdk.yml
+  tags: [weblogic, weblogic_jdk]
+
+- name: Install WebLogic Server
+  ansible.builtin.import_tasks: install.yml
+  tags: [weblogic, weblogic_install]
+
+- name: Create domain
+  ansible.builtin.import_tasks: domain.yml
+  tags: [weblogic, weblogic_domain]
+
+- name: Configure services
+  ansible.builtin.import_tasks: service.yml
+  tags: [weblogic, weblogic_service]

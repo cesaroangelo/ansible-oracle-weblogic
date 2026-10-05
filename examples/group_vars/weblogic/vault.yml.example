@@ -1,0 +1,3 @@
+---
+# cp vault.yml.example vault.yml && ansible-vault encrypt vault.yml
+vault_weblogic_admin_password: change-me-1

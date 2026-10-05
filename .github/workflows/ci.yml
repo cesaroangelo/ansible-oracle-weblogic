@@ -1,0 +1,34 @@
+---
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install tools
+        run: pip install ansible-core ansible-lint yamllint
+      - name: Install collections
+        run: ansible-galaxy collection install -r requirements.yml
+      - name: yamllint
+        run: yamllint .
+      - name: ansible-lint
+        run: ansible-lint
+      - name: Syntax check
+        env:
+          ANSIBLE_ROLES_PATH: ${{ runner.temp }}/roles
+        run: |
+          mkdir -p "$ANSIBLE_ROLES_PATH"
+          ln -s "$GITHUB_WORKSPACE" "$ANSIBLE_ROLES_PATH/cesaroangelo.weblogic"
+          ansible-playbook -i examples/inventory.ini examples/site.yml --syntax-check

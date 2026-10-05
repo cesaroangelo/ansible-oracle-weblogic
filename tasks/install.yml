@@ -1,0 +1,78 @@
+---
+- name: Check WebLogic installation
+  ansible.builtin.stat:
+    path: "{{ weblogic_installed_marker }}"
+  register: __weblogic_installed
+
+- name: Install WebLogic Server
+  when: not __weblogic_installed.stat.exists
+  block:
+    - name: Create installer directory
+      ansible.builtin.file:
+        path: "{{ weblogic_stage_dir }}/installer"
+        state: directory
+        owner: "{{ weblogic_user }}"
+        group: "{{ weblogic_group }}"
+        mode: "0750"
+
+    - name: Stage installer jar
+      ansible.builtin.copy:
+        src: "{{ weblogic_installer }}"
+        dest: "{{ weblogic_stage_dir }}/installer/"
+        remote_src: "{{ weblogic_installer_remote_src }}"
+        owner: "{{ weblogic_user }}"
+        group: "{{ weblogic_group }}"
+        mode: "0640"
+      when: weblogic_installer is regex('\.jar$')
+
+    - name: Unpack installer zip
+      ansible.builtin.unarchive:
+        src: "{{ weblogic_installer }}"
+        dest: "{{ weblogic_stage_dir }}/installer"
+        remote_src: "{{ weblogic_installer_remote_src }}"
+        owner: "{{ weblogic_user }}"
+        group: "{{ weblogic_group }}"
+      when: weblogic_installer is regex('\.zip$')
+
+    - name: Find installer jar
+      ansible.builtin.find:
+        paths: "{{ weblogic_stage_dir }}/installer"
+        patterns: "*.jar"
+      register: __weblogic_installer_jar
+      failed_when: __weblogic_installer_jar.matched != 1
+
+    - name: Template inventory pointer and response file
+      ansible.builtin.template:
+        src: "{{ item }}.j2"
+        dest: "{{ weblogic_stage_dir }}/{{ item }}"
+        owner: "{{ weblogic_user }}"
+        group: "{{ weblogic_group }}"
+        mode: "0640"
+      loop:
+        - oraInst.loc
+        - install.rsp
+
+    - name: Run silent installer
+      ansible.builtin.command:
+        argv:
+          - "{{ weblogic_java_home }}/bin/java"
+          - -jar
+          - "{{ __weblogic_installer_jar.files[0].path }}"
+          - -silent
+          - -responseFile
+          - "{{ weblogic_stage_dir }}/install.rsp"
+          - -invPtrLoc
+          - "{{ weblogic_stage_dir }}/oraInst.loc"
+        chdir: "{{ weblogic_stage_dir }}"
+        creates: "{{ weblogic_installed_marker }}"
+      become: true
+      become_user: "{{ weblogic_user }}"
+      environment:
+        JAVA_HOME: "{{ weblogic_java_home }}"
+
+  always:
+    - name: Remove installer media
+      ansible.builtin.file:
+        path: "{{ weblogic_stage_dir }}/installer"
+        state: absent
+      when: weblogic_stage_cleanup | bool

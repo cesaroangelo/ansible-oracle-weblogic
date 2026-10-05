@@ -1,0 +1,5 @@
+---
+weblogic_jdk_archive: files/jdk-21_linux-x64_bin.tar.gz
+weblogic_installer: files/V1045135-01.zip
+weblogic_domain_name: app_domain
+weblogic_admin_password: "{{ vault_weblogic_admin_password }}"

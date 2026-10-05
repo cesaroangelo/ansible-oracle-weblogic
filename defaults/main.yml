@@ -1,0 +1,52 @@
+---
+# OS account
+weblogic_user: oracle
+weblogic_group: oinstall
+weblogic_user_home: "/home/{{ weblogic_user }}"
+
+# Layout (Oracle Flexible Architecture)
+weblogic_base_dir: /u01/app/oracle
+weblogic_oracle_home: "{{ weblogic_base_dir }}/product/wls"
+weblogic_inventory_dir: "{{ weblogic_base_dir }}/oraInventory"
+weblogic_stage_dir: "{{ weblogic_base_dir }}/stage"
+weblogic_stage_cleanup: true
+
+# JDK: either unpack a JDK archive into weblogic_java_home, or point to an existing one
+weblogic_java_home: "{{ weblogic_base_dir }}/product/jdk"
+weblogic_jdk_archive: ""
+weblogic_jdk_archive_remote_src: false
+
+# Installer: .jar or the .zip shipped by Oracle (path on the controller unless remote_src)
+# weblogic_installer: required
+weblogic_installer_remote_src: false
+weblogic_install_type: WebLogic Server
+
+# Domain
+weblogic_domain_name: base_domain
+weblogic_domain_home: "{{ weblogic_base_dir }}/config/domains/{{ weblogic_domain_name }}"
+weblogic_domain_template: "{{ weblogic_oracle_home }}/wlserver/common/templates/wls/wls.jar"
+weblogic_server_start_mode: prod
+
+weblogic_admin_username: weblogic
+# weblogic_admin_password: required, keep it in ansible-vault
+weblogic_admin_server_name: AdminServer
+weblogic_admin_listen_address: ""
+weblogic_admin_listen_port: 7001
+weblogic_admin_ssl_enabled: false
+weblogic_admin_ssl_listen_port: 7002
+weblogic_admin_mem_args: "-Xms512m -Xmx1024m"
+weblogic_admin_java_options: "-Djava.security.egd=file:/dev/./urandom"
+
+# Node Manager (per domain)
+weblogic_nodemanager_enabled: true
+weblogic_nodemanager_listen_address: localhost
+weblogic_nodemanager_listen_port: 5556
+
+# Services
+weblogic_service_enabled: true
+weblogic_service_state: started
+weblogic_service_limit_nofile: 65536
+weblogic_wait_timeout: 600
+
+# Open admin ports in firewalld (only when firewalld is running)
+weblogic_firewall_manage: true
