@@ -25,6 +25,8 @@ provisioner:
   inventory:
     group_vars:
       all:
+        # sudo PAM account checks fail in CI containers; root -> oracle via su (pam_rootok)
+        ansible_become_method: su
         weblogic_installer: /opt/media/fmw_14.1.2.0.0_wls_generic.jar
         weblogic_installer_remote_src: true
         weblogic_jdk_archive: /opt/media/jdk.tar.gz
