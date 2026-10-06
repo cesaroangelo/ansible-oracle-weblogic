@@ -1,0 +1,5 @@
+---
+weblogic_server_start_mode: secure
+weblogic_nodemanager_enabled: false
+weblogic_installer_extra_args:
+  - -ignoreSysPrereqs

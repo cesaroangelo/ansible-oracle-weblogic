@@ -1,17 +1,20 @@
 ---
 galaxy_info:
+  role_name: weblogic
+  namespace: cesaroangelo
   author: Angelo Cesaro
-  license: GPLv2
-  min_ansible_version: 1.4
+  description: Install Oracle WebLogic Server and create a domain managed by systemd
+  license: GPL-3.0-only
+  min_ansible_version: "2.16"
   platforms:
-    - name: CentOS
+    - name: EL
       versions:
-        - 6.x x64
-        - 6.x i386
-    - name: Red Hat Enterprise Linux
-      versions:
-        - 6.x x64
-        - 6.x i386
-  categories:
-     - web
+        - "8"
+        - "9"
+  galaxy_tags:
+    - weblogic
+    - oracle
+    - middleware
+    - java
+
 dependencies: []

@@ -1,0 +1,32 @@
+#!/bin/bash
+# Test double for the WebLogic installer and WLST: produces the files the role relies on.
+set -eu
+[ "${1:-}" = "-jar" ] || { echo 'java version "21"'; exit 0; }
+[ "$(id -un)" = oracle ]
+echo "$@" > "$PWD/installer.args"
+while [ $# -gt 0 ]; do
+  case "$1" in -responseFile) rsp=$2 ;; -invPtrLoc) inv=$2 ;; esac
+  shift
+done
+grep -q '^inventory_loc=' "$inv"
+oh=$(sed -n 's/^ORACLE_HOME=//p' "$rsp")
+mkdir -p "$oh/wlserver/server/lib" "$oh/oracle_common/common/bin" "$oh/wlserver/common/templates/wls"
+touch "$oh/wlserver/server/lib/weblogic.jar" "$oh/wlserver/common/templates/wls/wls.jar"
+cat > "$oh/oracle_common/common/bin/wlst.sh" <<'WLST'
+#!/bin/bash
+set -eu
+s=$1
+[ -n "$WLS_ADMIN_USERNAME" ] && [ -n "$WLS_ADMIN_PASSWORD" ]
+! grep -qF "$WLS_ADMIN_PASSWORD" "$s"
+d=$(sed -n "s/^writeDomain('\(.*\)')/\1/p" "$s")
+ports=$(sed -n "s/^set('ListenPort', \([0-9]*\))/\1/p" "$s")
+admin=$(echo "$ports" | head -1)
+grep -q "SecureModeEnabled', 'true'" "$s" && admin=$(echo "$ports" | sed -n 2p)
+nm=$(echo "$ports" | tail -1)
+mkdir -p "$d/config" "$d/bin"
+cp "$s" "$d/config/config.xml"
+printf '#!/bin/bash\nexec python3 -m http.server %s\n' "$admin" > "$d/bin/startWebLogic.sh"
+printf '#!/bin/bash\nexec python3 -m http.server %s --bind 127.0.0.1\n' "$nm" > "$d/bin/startNodeManager.sh"
+chmod +x "$d/bin/"*.sh
+WLST
+chmod +x "$oh/oracle_common/common/bin/wlst.sh"

@@ -1,0 +1,32 @@
+---
+- name: Unpack JDK archive
+  when: weblogic_jdk_archive | length > 0
+  block:
+    - name: Create JDK directory
+      ansible.builtin.file:
+        path: "{{ weblogic_java_home }}"
+        state: directory
+        owner: "{{ weblogic_user }}"
+        group: "{{ weblogic_group }}"
+        mode: "0755"
+
+    - name: Unpack JDK
+      ansible.builtin.unarchive:
+        src: "{{ weblogic_jdk_archive }}"
+        dest: "{{ weblogic_java_home }}"
+        remote_src: "{{ weblogic_jdk_archive_remote_src }}"
+        extra_opts: [--strip-components=1]
+        creates: "{{ weblogic_java_home }}/bin/java"
+        owner: "{{ weblogic_user }}"
+        group: "{{ weblogic_group }}"
+
+- name: Check JDK
+  ansible.builtin.stat:
+    path: "{{ weblogic_java_home }}/bin/java"
+  register: __weblogic_java
+
+- name: Assert JDK is present
+  ansible.builtin.assert:
+    that: __weblogic_java.stat.executable | default(false)
+    fail_msg: "No JDK at {{ weblogic_java_home }}: set weblogic_jdk_archive or weblogic_java_home"
+    quiet: true

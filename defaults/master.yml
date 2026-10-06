@@ -1,8 +1,0 @@
----
-# align everything, running all stable playbooks in sequence
-
-    # tasks:
-
-    - include: oraclePre.yml
-    - include: installWeblogic.yml
-    - include: createDomain.yml

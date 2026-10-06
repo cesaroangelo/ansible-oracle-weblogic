@@ -1,0 +1,12 @@
+---
+- name: Reload systemd
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+
+- name: Restart weblogic services
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    state: restarted
+    daemon_reload: true
+  loop: "{{ ([weblogic_nodemanager_service] if weblogic_nodemanager_enabled | bool else []) + [weblogic_admin_service] }}"
+  when: weblogic_service_state == 'started'

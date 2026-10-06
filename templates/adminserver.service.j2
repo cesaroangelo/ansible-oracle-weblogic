@@ -1,0 +1,23 @@
+{{ ansible_managed | comment }}
+[Unit]
+Description=WebLogic {{ weblogic_domain_name }} {{ weblogic_admin_server_name }}
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User={{ weblogic_user }}
+Group={{ weblogic_group }}
+WorkingDirectory={{ weblogic_domain_home }}
+Environment="JAVA_HOME={{ weblogic_java_home }}"
+Environment="USER_MEM_ARGS={{ weblogic_admin_mem_args }}"
+Environment="JAVA_OPTIONS={{ weblogic_admin_java_options }}"
+ExecStart={{ weblogic_domain_home }}/bin/startWebLogic.sh
+SuccessExitStatus=130 143
+TimeoutStopSec=300
+Restart=on-failure
+RestartSec=30
+LimitNOFILE={{ weblogic_service_limit_nofile }}
+
+[Install]
+WantedBy=multi-user.target

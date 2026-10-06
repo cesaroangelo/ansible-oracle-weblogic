@@ -1,0 +1,21 @@
+{{ ansible_managed | comment }}
+[Unit]
+Description=WebLogic {{ weblogic_domain_name }} Node Manager
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User={{ weblogic_user }}
+Group={{ weblogic_group }}
+WorkingDirectory={{ weblogic_domain_home }}
+Environment="JAVA_HOME={{ weblogic_java_home }}"
+ExecStart={{ weblogic_domain_home }}/bin/startNodeManager.sh
+SuccessExitStatus=130 143
+TimeoutStopSec=120
+Restart=on-failure
+RestartSec=30
+LimitNOFILE={{ weblogic_service_limit_nofile }}
+
+[Install]
+WantedBy=multi-user.target

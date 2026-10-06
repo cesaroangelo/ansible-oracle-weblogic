@@ -1,0 +1,32 @@
+---
+- name: Install required packages
+  ansible.builtin.dnf:
+    name: "{{ weblogic_packages }}"
+    state: present
+
+- name: Create group
+  ansible.builtin.group:
+    name: "{{ weblogic_group }}"
+    state: present
+
+- name: Create user
+  ansible.builtin.user:
+    name: "{{ weblogic_user }}"
+    group: "{{ weblogic_group }}"
+    home: "{{ weblogic_user_home }}"
+    shell: /bin/bash
+    state: present
+
+- name: Create directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ weblogic_user }}"
+    group: "{{ weblogic_group }}"
+    mode: "0750"
+  loop:
+    - "{{ weblogic_base_dir }}"
+    - "{{ weblogic_inventory_dir }}"
+    - "{{ weblogic_oracle_home | dirname }}"
+    - "{{ weblogic_domain_home | dirname }}"
+    - "{{ weblogic_stage_dir }}"

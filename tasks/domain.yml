@@ -1,0 +1,44 @@
+---
+- name: Template domain creation script
+  ansible.builtin.template:
+    src: create_domain.py.j2
+    dest: "{{ weblogic_stage_dir }}/create_domain_{{ weblogic_domain_name }}.py"
+    owner: "{{ weblogic_user }}"
+    group: "{{ weblogic_group }}"
+    mode: "0640"
+
+- name: Create domain
+  ansible.builtin.command:
+    argv:
+      - "{{ weblogic_wlst }}"
+      - "{{ weblogic_stage_dir }}/create_domain_{{ weblogic_domain_name }}.py"
+    chdir: "{{ weblogic_stage_dir }}"
+    creates: "{{ weblogic_domain_home }}/config/config.xml"
+  become: true
+  become_user: "{{ weblogic_user }}"
+  environment:
+    JAVA_HOME: "{{ weblogic_java_home }}"
+    WLS_ADMIN_USERNAME: "{{ weblogic_admin_username }}"
+    WLS_ADMIN_PASSWORD: "{{ weblogic_admin_password }}"
+  no_log: true
+
+- name: Create security directory
+  ansible.builtin.file:
+    path: "{{ weblogic_domain_home }}/servers/{{ weblogic_admin_server_name }}/security"
+    state: directory
+    owner: "{{ weblogic_user }}"
+    group: "{{ weblogic_group }}"
+    mode: "0750"
+
+# WebLogic encrypts boot.properties on first start: never overwrite it
+- name: Create boot.properties
+  ansible.builtin.copy:
+    dest: "{{ weblogic_domain_home }}/servers/{{ weblogic_admin_server_name }}/security/boot.properties"
+    content: |
+      username={{ weblogic_admin_username }}
+      password={{ weblogic_admin_password }}
+    force: false
+    owner: "{{ weblogic_user }}"
+    group: "{{ weblogic_group }}"
+    mode: "0600"
+  no_log: true

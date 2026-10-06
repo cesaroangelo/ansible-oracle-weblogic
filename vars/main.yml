@@ -1,0 +1,18 @@
+---
+weblogic_packages:
+  - acl
+  - procps-ng
+  - tar
+  - unzip
+
+weblogic_wlst: "{{ weblogic_oracle_home }}/oracle_common/common/bin/wlst.sh"
+weblogic_installed_marker: "{{ weblogic_oracle_home }}/wlserver/server/lib/weblogic.jar"
+
+weblogic_admin_service: "weblogic-{{ weblogic_domain_name }}-adminserver"
+weblogic_nodemanager_service: "weblogic-{{ weblogic_domain_name }}-nodemanager"
+
+# Secured production mode disables the plain listen port; first port is the readiness probe
+weblogic_admin_ports: >-
+  {{ ([] if weblogic_server_start_mode == 'secure' else [weblogic_admin_listen_port])
+     + ([weblogic_admin_ssl_listen_port] if weblogic_admin_ssl_enabled | bool or weblogic_server_start_mode == 'secure' else [])
+     + ([weblogic_administration_port] if weblogic_server_start_mode == 'secure' else []) }}

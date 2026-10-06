@@ -1,0 +1,9 @@
+{{ ansible_managed | comment }}
+[ENGINE]
+Response File Version=1.0.0.0.0
+
+[GENERIC]
+ORACLE_HOME={{ weblogic_oracle_home }}
+INSTALL_TYPE={{ weblogic_install_type }}
+DECLINE_SECURITY_UPDATES=true
+SECURITY_UPDATES_VIA_MYORACLESUPPORT=false
