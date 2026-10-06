@@ -20,4 +20,4 @@ Complete rewrite. Not compatible with 1.x.
 - Disabling iptables.
 
 ### Fixed
-- License mismatch: GPL-3.0-or-later everywhere, `LICENSE` added.
+- License mismatch: GPL-3.0-only everywhere, `LICENSE` added.
