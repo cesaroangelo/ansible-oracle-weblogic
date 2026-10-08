@@ -3,8 +3,8 @@ driver:
   name: docker
 
 platforms:
-  - name: el8
-    image: geerlingguy/docker-rockylinux8-ansible:latest
+  - name: el9-secure
+    image: geerlingguy/docker-rockylinux9-ansible:latest
     pre_build_image: true
     command: ""
     privileged: true
