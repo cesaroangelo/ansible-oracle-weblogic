@@ -7,9 +7,9 @@ Server and Node Manager under systemd. Idempotent, runs as an unprivileged user,
 
 ## Requirements
 
-- ansible-core >= 2.16 (EL8 targets: 2.16 only, EL8 ships Python 3.6)
+- ansible-core >= 2.19
 - `ansible-galaxy collection install -r requirements.yml`
-- RHEL / Rocky / AlmaLinux / Oracle Linux 8, 9
+- RHEL / Rocky / AlmaLinux / Oracle Linux 9
 - WebLogic 14.1.2 (JDK 17/21), 14.1.1 (JDK 8/11), 12.2.1.4 (JDK 8)
 - Oracle installer (`.zip` or `.jar`) and JDK `.tar.gz` from [Oracle eDelivery](https://edelivery.oracle.com)
 
@@ -58,7 +58,7 @@ Tags: `weblogic_prerequisites`, `weblogic_jdk`, `weblogic_install`, `weblogic_do
 
 ```sh
 yamllint . && ansible-lint
-molecule test --platform-name el9   # el8 needs ansible-core 2.16
+molecule test
 ```
 
 ## License

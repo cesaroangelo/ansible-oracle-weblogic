@@ -39,14 +39,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          # EL8 ships Python 3.6: ansible-core 2.16 is the last release able to manage it
-          - platform: el8
-            ansible: ansible-core>=2.16,<2.17
-            docker_collection: community.docker:>=4.0.0,<5.0.0
-          - platform: el9
-            ansible: ansible-core
-            docker_collection: community.docker
+        ansible:
+          - ansible-core>=2.19,<2.20
+          - ansible-core
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
@@ -57,9 +52,9 @@ jobs:
       - name: Install collections
         run: |
           ansible-galaxy collection install -r requirements.yml
-          ansible-galaxy collection install "${{ matrix.docker_collection }}"
+          ansible-galaxy collection install community.docker
       - name: Molecule
-        run: molecule test --platform-name ${{ matrix.platform }}
+        run: molecule test
         env:
           PY_COLORS: "1"
           ANSIBLE_FORCE_COLOR: "1"
